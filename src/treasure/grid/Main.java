@@ -18,6 +18,13 @@ public class Main {
         
         placeTreasure();
         
+        while(true){
+            mostrarGrid();
+            userChoice();
+        }
+    }
+    
+    static void mostrarGrid(){
         for (int[] row : grid) {
             //Arrays.stream(row).forEach(System.out::print);
             for(int num:row){
@@ -26,9 +33,6 @@ public class Main {
             System.out.println("");
         }
         System.out.println("");
-        
-        userChoice();
-        
     }
     
     static void placeTreasure() {
@@ -53,7 +57,8 @@ public class Main {
         int y = in.nextInt();
         in.nextLine();
         
-        evaluarJuego(x, y);
+        String respuesta = evaluarJuego(x, y);
+        System.out.println(respuesta);
     }
 
     private static boolean isThereTreasure(int x, int y) {
@@ -61,37 +66,47 @@ public class Main {
     }
 
     private static String evaluarJuego(int x, int y) {
+        marcarGrid(x, y);
         if(isThereTreasure(x,y)){
+            ganar();
             return "ganaste";
         }
-        int BIT_ARRIBA = 1;
-        int BIT_ABAJO = 1 << 1;
-        int BIT_DERECHA = 1 << 2;
-        int BIT_IZQUIERDA = 1 << 3;
+        final int BIT_ARRIBA = 1;
+        final int BIT_ABAJO = 1 << 1;
+        final int BIT_DERECHA = 1 << 2;
+        final int BIT_IZQUIERDA = 1 << 3;
         int posicionFlag = 0;
         
         System.out.println("no ganaste");
         
-        if(treasure[1] > y) posicionFlag |= BIT_ARRIBA;   
+        if(treasure[1] < y) posicionFlag |= BIT_ARRIBA;   
         if(treasure[1] > y) posicionFlag |= BIT_ABAJO;
         if(treasure[0] > x) posicionFlag |= BIT_DERECHA;
-        if(treasure[0] > x) posicionFlag |= BIT_IZQUIERDA;
+        if(treasure[0] < x) posicionFlag |= BIT_IZQUIERDA;
         
         String direccionTreasure = "";
         
         if((posicionFlag & BIT_ARRIBA) == 1){            
             direccionTreasure+="U";            
         }
-        if((posicionFlag & BIT_ABAJO)==1){            
+        if((posicionFlag & BIT_ABAJO)==2){            
             direccionTreasure+="D";            
         }
-        if((posicionFlag & BIT_DERECHA) == 1){
+        if((posicionFlag & BIT_DERECHA) == 4){
             direccionTreasure+="R";
         }
-        if((posicionFlag & BIT_IZQUIERDA)==1){
+        if((posicionFlag & BIT_IZQUIERDA)==8){
             direccionTreasure+="L";
-        }
+        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
         return direccionTreasure;
+    }
+
+    private static void marcarGrid(int x, int y) {
+        grid[y][x] = 2;
+    }
+
+    private static void ganar() {
+        placeTreasure();
     }
     
 }
