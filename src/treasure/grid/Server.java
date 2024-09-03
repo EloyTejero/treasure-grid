@@ -43,11 +43,11 @@ public class Server {
         }
     }
     
-    /*public synchronized void sendAll(String message){
+    public static synchronized void sendAll(String message){
         for(clientManager c:clientes){
             c.sendMessage(message);
         }
-    }*/
+    }
     
     private static class clientManager extends Thread{
         
@@ -67,13 +67,12 @@ public class Server {
                 
                 String message;
                 while(true){
-                    message = in.readLine();
                     System.out.println("mamitas");
-                    out.println("buenos dias\n");
+                    message = in.readLine();
                     if(message!= null){
                         System.out.println("Recibido: "+message);
                         out.println(message);
-                        //sendMessage(message);
+                        sendAll(message);
                         System.out.println("Enviado: "+message);
                     }
                 }
@@ -82,10 +81,11 @@ public class Server {
             }
         }
         
-        /*private void sendMessage(String message){
+        private void sendMessage(String message){
             System.out.println("Enviandooo...");
             out.println(message);
-        }*/
+            out.flush();
+        }
     }
     
     public static void main(String[] args){
