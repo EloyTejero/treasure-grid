@@ -19,17 +19,24 @@ public class Client {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             
             new Thread(() -> {
-                String respuesta;
                 try {
-                    while ((respuesta = in.readLine()) != null) {
-                        receiveCell(respuesta);
+                    System.out.println("holña");
+                    String respuesta;
+                    while (true) {
+                        System.out.println("asdasd");
+                        respuesta = in.readLine();
+                        System.out.println("hola");
+                        if(respuesta != null){
+                            System.out.println("Recibido: "+respuesta);
+                            receiveCell(respuesta);
+                        }
                     }
                 } catch (IOException e) {
                 }
             }).start();
             
-            String message;
-            while(true){
+            //String message;
+            //while(true){
                 /*
                 message=scanner.nextLine();
                 if(message!=null){
@@ -38,7 +45,7 @@ public class Client {
                     out.flush();
                 }*/
                 game(10);
-            }
+            //}
         } catch (IOException e) {
         }
         finally{
@@ -87,14 +94,17 @@ public class Client {
         //TODO: falta establecer protocolo
         String [] position = {String.valueOf(x),String.valueOf(y)};
         out.println(String.join(",", position));
+        System.out.println("Coordenada enviada");
         out.flush();
     }
     
     private static void receiveCell(String cell){
+        System.out.println("Recibiendoo.....");
         String[] coordenadas = cell.split(",");
         int x = Integer.valueOf(coordenadas[0]);
         int y = Integer.valueOf(coordenadas[1]);
         marcarGrid(x, y);
+        System.out.println("x: "+x+" y: "+y);
         mostrarGrid();
     }
     
