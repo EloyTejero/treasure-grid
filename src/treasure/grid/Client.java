@@ -26,14 +26,15 @@ public class Client {
                 } catch (IOException e) {
                 }
             }).start();
+            
+            String message;
+            while((message=scanner.nextLine())!=null){
+                out.print(message);
+            }
         } catch (IOException e) {
         }
         finally{
-            try {
-                out.close();
-                in.close();
-            } catch (IOException e) {
-            }
+            scanner.close();
         }
     }
     
