@@ -17,7 +17,7 @@ public class Client {
         try (Socket socket = new Socket("localhost", 1234)) {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            
+            System.out.println(in.readLine());
             new Thread(() -> {
                 try {
                     System.out.println("holña");

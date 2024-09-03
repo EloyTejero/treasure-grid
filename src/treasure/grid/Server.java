@@ -69,6 +69,7 @@ public class Server {
                 while(true){
                     message = in.readLine();
                     System.out.println("mamitas");
+                    out.println("buenos dias\n");
                     if(message!= null){
                         System.out.println("Recibido: "+message);
                         out.println(message);
