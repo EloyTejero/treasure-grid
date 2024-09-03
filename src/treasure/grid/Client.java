@@ -22,7 +22,7 @@ public class Client {
                 String respuesta;
                 try {
                     while ((respuesta = in.readLine()) != null) {
-                        System.out.println(respuesta);
+                        receiveCell(respuesta);
                     }
                 } catch (IOException e) {
                 }
@@ -30,12 +30,14 @@ public class Client {
             
             String message;
             while(true){
+                /*
                 message=scanner.nextLine();
                 if(message!=null){
                     System.out.println(message);
                     out.println(message);
                     out.flush();
-                }
+                }*/
+                game(10);
             }
         } catch (IOException e) {
         }
@@ -47,12 +49,13 @@ public class Client {
     public static void game(int gridSize) {
         grid = new int[gridSize][gridSize];
                 
+        mostrarGrid();
         while(true){
-            mostrarGrid();
             userChoice();
         }
     }
     private static void mostrarGrid(){
+        System.out.println("");
         for (int[] row : grid) {
             //Arrays.stream(row).forEach(System.out::print);
             for(int num:row){
@@ -74,7 +77,7 @@ public class Client {
         //Al ser por consola hay que invertir el eje Y, ya que tecnicamente la primera fila desde abajo
         //es el indice maximo, si la grilla es de 10 va a ser 9. Pero para que sea mas facil para el usuario
         //que cuando escriba 0 se refiera a la ultima linea.
-        y = grid.length - y; 
+        //y = grid.length - y; 
         scanner.nextLine();
         
         //enviar al server el punto elegido
@@ -83,7 +86,19 @@ public class Client {
     private static void selectCellServer(int x, int y){
         //TODO: falta establecer protocolo
         String [] position = {String.valueOf(x),String.valueOf(y)};
-        out.print(String.join(",", position));
+        out.println(String.join(",", position));
         out.flush();
+    }
+    
+    private static void receiveCell(String cell){
+        String[] coordenadas = cell.split(",");
+        int x = Integer.valueOf(coordenadas[0]);
+        int y = Integer.valueOf(coordenadas[1]);
+        marcarGrid(x, y);
+        mostrarGrid();
+    }
+    
+    private static void marcarGrid(int x, int y) {
+        grid[y][x] = 2;
     }
 }

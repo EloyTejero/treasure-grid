@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,6 +16,7 @@ import java.util.logging.Logger;
 public class Server {
     
     private ServerSocket serverSocket;
+    private static final List<clientManager> clientes = new ArrayList<>();
     
     public void start(int port){
         try {
@@ -21,7 +24,9 @@ public class Server {
             System.out.println("Server encendido");
             while(true){
                 Socket clientSocket = serverSocket.accept();
-                new clientManager(clientSocket).start();
+                clientManager client = new clientManager(clientSocket);
+                client.start();
+                clientes.add(client);
             }
         } catch (IOException ex) {
             System.out.println("Error en runtime server");
@@ -35,6 +40,12 @@ public class Server {
             serverSocket.close();
         } catch (IOException ex) {
             System.out.println("Error al cerrar el server");
+        }
+    }
+    
+    public synchronized void sendAll(String message){
+        for(clientManager c:clientes){
+            c.sendMessage(message);
         }
     }
     
@@ -54,21 +65,22 @@ public class Server {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream());
                 
-                out.println("Bienvenido al Server");
-                out.flush();
-                
                 String message;
                 while(true){
                     message = in.readLine();
                     if(message!= null){
                         System.out.println("Recibido: "+message);
-                        out.println("Recibido: "+message);
-                        out.flush();
+                        sendMessage(message);
+                        System.out.println("Enviado: "+message);
                     }
                 }
             } catch (IOException ex) {
                 System.out.println("Error trasmision de mensajes");
             }
+        }
+        
+        private void sendMessage(String message){
+            out.println(message);
         }
     }
     
