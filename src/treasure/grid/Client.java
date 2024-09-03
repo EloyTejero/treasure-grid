@@ -17,6 +17,7 @@ public class Client {
         try (Socket socket = new Socket("localhost", 1234)) {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            
             new Thread(() -> {
                 String respuesta;
                 try {
@@ -28,8 +29,13 @@ public class Client {
             }).start();
             
             String message;
-            while((message=scanner.nextLine())!=null){
-                out.print(message);
+            while(true){
+                message=scanner.nextLine();
+                if(message!=null){
+                    System.out.println(message);
+                    out.println(message);
+                    out.flush();
+                }
             }
         } catch (IOException e) {
         }

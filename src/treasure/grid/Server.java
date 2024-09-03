@@ -55,11 +55,16 @@ public class Server {
                 out = new PrintWriter(socket.getOutputStream());
                 
                 out.println("Bienvenido al Server");
+                out.flush();
                 
                 String message;
-                while((message = in.readLine()) != null){
-                    System.out.println("Recibido: "+message);
-                    out.print("Recibido: "+message);
+                while(true){
+                    message = in.readLine();
+                    if(message!= null){
+                        System.out.println("Recibido: "+message);
+                        out.println("Recibido: "+message);
+                        out.flush();
+                    }
                 }
             } catch (IOException ex) {
                 System.out.println("Error trasmision de mensajes");
