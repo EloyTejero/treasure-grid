@@ -67,7 +67,7 @@ public class Server {
                 
                 String message;
                 while(true){
-                    System.out.println("mamitas");
+                    //System.out.println("mamitas");
                     message = in.readLine();
                     if(message!= null){
                         System.out.println("Recibido: "+message);

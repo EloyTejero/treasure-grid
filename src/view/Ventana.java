@@ -7,8 +7,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import treasure.grid.Client;
 
 public class Ventana extends JFrame{
+    
+    JButton [][] grid = new JButton[10][10];
     
     public Ventana(){
         setSize(500,400);
@@ -18,30 +21,42 @@ public class Ventana extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(10, 10)); // Cuadrícula de 4x4
+        panel.setLayout(new GridLayout(10, 10)); // Cuadrícula de 10x10
         
         ActionListener clickListener = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     JButton source = (JButton) e.getSource();
-                    System.out.println("Clic en: " + source.getText());
+                    String coordenada = source.getName();
+                    System.out.println("Clic en: " + coordenada);
+                    String[] coordenadas = coordenada.split(",");
+                    int x = Integer.valueOf(coordenadas[0]);
+                    int y = Integer.valueOf(coordenadas[1]);
+                    Client.selectCellServer(x, y);
                 }
         };
         
         // Añadir botones a la cuadrícula
-        for (int i = 1; i <= 100; i++) {
-            JButton button = new JButton(""+i);
-            button.addActionListener(clickListener);
-            panel.add(button);
+        for (int i = 0; i < grid.length; i++) {
+            for(int j=0;j < grid[i].length; j++){
+                JButton button = new JButton();
+                button.setName(j+","+i);
+                button.addActionListener(clickListener);
+                panel.add(button);
+                grid[i][j] = button;
+            }
         }
 
         // Añadir el panel al marco
         add(panel);
-        
         setVisible(true);
     }
     
-    public static void main(String[] args){
-        new Ventana();
+    public void pintarCell(int x, int y, String pintar){
+        grid[y][x].setText(pintar);
     }
+    
+    /*public static void main(String[] args){
+        new Ventana();
+    }*/
 }

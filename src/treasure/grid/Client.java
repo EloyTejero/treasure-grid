@@ -6,12 +6,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import view.Ventana;
 
 public class Client {
     static int[][] grid; // La cuadrícula del juego
     static Scanner scanner = new Scanner(System.in);
     static PrintWriter out;
     static BufferedReader in;
+    static Ventana view = new Ventana();
+    static boolean win = false;
     
     public static void main(String[] args){
         try (Socket socket = new Socket("localhost", 1234)) {
@@ -40,22 +43,34 @@ public class Client {
                     out.println(message);
                     out.flush();
                 }*/
-                game(10);
+            while(true){
+                if(win){
+                    view.setVisible(false);
+                    view.dispose();
+                    game();
+                }
+            }
+                
             //}
         } catch (IOException e) {
         }
         finally{
+            System.out.println("hola");
             scanner.close();
+            view.setVisible(false);
+            view.dispose();
         }
     }
     
-    public static void game(int gridSize) {
-        grid = new int[gridSize][gridSize];
+    public static void game() {
+        //grid = new int[gridSize][gridSize];
+        System.out.println("Spawn ventana");
+        view = new Ventana();
                 
-        mostrarGrid();
+        /*mostrarGrid();
         while(true){
             userChoice();
-        }
+        }*/
     }
     private static void mostrarGrid(){
         System.out.println("");
@@ -68,12 +83,14 @@ public class Client {
         }
         System.out.println("");
     }
-    private static void userChoice() {
+    public static void userChoice(int x, int y) {
+        /*
         System.out.print("Ingrese x: ");
         int x = scanner.nextInt();
         scanner.nextLine();
         System.out.print("Ingrese y: ");
         int y = scanner.nextInt();
+        */
         
         //TODO: verificar que las coordenadas esten dentro de la grilla de juego
         
@@ -86,7 +103,7 @@ public class Client {
         //enviar al server el punto elegido
         selectCellServer(x, y);
     }
-    private static void selectCellServer(int x, int y){
+    public static void selectCellServer(int x, int y){
         //TODO: falta establecer protocolo
         String [] position = {String.valueOf(x),String.valueOf(y)};
         out.println(String.join(",", position));
@@ -94,14 +111,18 @@ public class Client {
         out.flush();
     }
     
-    private static void receiveCell(String cell){
+    private static void receiveCell(String response){
         System.out.println("Recibiendoo.....");
-        String[] coordenadas = cell.split(",");
+        if(response=="win"){
+            win=true;
+        }
+        String[] coordenadas = response.split(",");
         int x = Integer.valueOf(coordenadas[0]);
         int y = Integer.valueOf(coordenadas[1]);
-        marcarGrid(x, y);
+        //marcarGrid(x, y);
+        view.pintarCell(x, y, "X");
         System.out.println("x: "+x+" y: "+y);
-        mostrarGrid();
+        //mostrarGrid();
     }
     
     private static void marcarGrid(int x, int y) {
