@@ -39,20 +39,32 @@ public class MessageManipulator {
     }
     
     private String getMessageCode(){
+        if(getColonIndex(message)<0){
+            return "";
+        }
+        
         return message.substring(0, getColonIndex(message)).trim();
     }
     
     private void setMessageLevel(MessageLevel level){
-        message = level.toString() + ":" + message;
+        if(getColonIndex(message)>=0){
+            message = getMessageInfo();
+        }
+        message = level.getNumber() + ":" + message;
     }
     
     private int getColonIndex(String message){
+        boolean found = false;
         int finalIndex = 0;
         for(char i:message.toCharArray()){
             if(i==':'){
+                found = true;
                 break; 
             }
             finalIndex++;
+        }
+        if(!found) {
+            finalIndex = -1;
         }
         return finalIndex;
     }

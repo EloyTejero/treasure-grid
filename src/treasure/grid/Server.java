@@ -15,11 +15,13 @@ public class Server {
     
     private ServerSocket serverSocket;
     private static final List<clientManager> clientes = new ArrayList<>();
+    private static int [] treasure = new int[2];
     
     public void start(int port){
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Server encendido");
+            placeTreasure();
             while(true){
                 Socket clientSocket = serverSocket.accept();
                 clientManager client = new clientManager(clientSocket);
@@ -47,6 +49,18 @@ public class Server {
         }
     }
     
+    static void placeTreasure() {
+        int x = (int) (Math.random() * 10);
+        int y = (int) (Math.random() * 10);
+        treasure[0] = x;
+        treasure[1] = y;
+        System.out.println("Tesoro: "+x+","+y);
+    }
+    
+    private static synchronized boolean isThereTreasure(int x, int y) {
+        return (treasure[0] == x) && (treasure[1] == y);
+    }
+    
     private static class clientManager extends Thread{
         
         private final Socket socket;
@@ -65,13 +79,15 @@ public class Server {
                 
                 String message;
                 while(true){
-                    //System.out.println("mamitas");
                     message = in.readLine();
                     if(message!= null){
                         System.out.println("Recibido: "+message);
+                        /*
                         out.println(message);
                         sendAll(message);
                         System.out.println("Enviado: "+message);
+                        */
+                        receiveMessage(message);
                     }
                 }
             } catch (IOException ex) {
@@ -84,6 +100,66 @@ public class Server {
             out.println(message);
             out.flush();
         }
+        
+        private void receiveMessage(String CodedMessage){
+            MessageManipulator message = new MessageManipulator(CodedMessage);
+            MessageLevel messageType = message.getMessageLevel();
+            switch (messageType) {
+                case EVALUATE:
+                    evaluateCell(message);
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+
+        private void evaluateCell(MessageManipulator message) {
+            MessageManipulator response;
+            
+            String [] coords = message.getMessageInfo().split(",");
+            int x = Integer.valueOf(coords[0]);
+            int y = Integer.valueOf(coords[1]);
+            
+            if(isThereTreasure(x,y)){
+                response = new MessageManipulator("win");
+                sendMessage(response.getOutputInProtocol(MessageLevel.WIN));
+                response = new MessageManipulator(x+","+y+",T");
+            } else{
+                final int BIT_ARRIBA = 1;
+                final int BIT_ABAJO = 1 << 1;
+                final int BIT_DERECHA = 1 << 2;
+                final int BIT_IZQUIERDA = 1 << 3;
+                int posicionFlag = 0;
+
+                System.out.println("no ganaste");
+
+                if(treasure[1] < y) posicionFlag |= BIT_ARRIBA;
+                if(treasure[1] > y) posicionFlag |= BIT_ABAJO;
+                if(treasure[0] > x) posicionFlag |= BIT_DERECHA;
+                if(treasure[0] < x) posicionFlag |= BIT_IZQUIERDA;
+
+                String direccionTreasure = "";
+
+                if((posicionFlag & BIT_ARRIBA) != 0){            
+                    direccionTreasure+="U";            
+                }
+                if((posicionFlag & BIT_ABAJO) != 0){            
+                    direccionTreasure+="D";            
+                }
+                if((posicionFlag & BIT_DERECHA) != 0){
+                    direccionTreasure+="R";
+                }
+                if((posicionFlag & BIT_IZQUIERDA) != 0){
+                    direccionTreasure+="L";
+                }
+                
+                response = new MessageManipulator(x+","+y+","+direccionTreasure);
+            }
+            
+            sendAll(response.getOutputInProtocol(MessageLevel.PAINT));
+        }
+        
+        
     }
     
     public static void main(String[] args){

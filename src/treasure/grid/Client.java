@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import javax.swing.JOptionPane;
 import view.Ventana;
 
 public class Client {
@@ -22,12 +23,12 @@ public class Client {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             new Thread(() -> {
                 try {
-                    String respuesta;
+                    String message;
                     while (true) {
-                        respuesta = in.readLine();
-                        if(respuesta != null){
-                            System.out.println("Recibido: "+respuesta);
-                            receiveCell(respuesta);
+                        message = in.readLine();
+                        if(message != null){
+                            System.out.println("Recibido: "+message);
+                            receiveMessage(message);
                         }
                     }
                 } catch (IOException e) {
@@ -55,7 +56,7 @@ public class Client {
         } catch (IOException e) {
         }
         finally{
-            System.out.println("hola");
+            System.out.println("finally ejecutado");
             scanner.close();
             view.setVisible(false);
             view.dispose();
@@ -72,6 +73,7 @@ public class Client {
             userChoice();
         }*/
     }
+    
     private static void mostrarGrid(){
         System.out.println("");
         for (int[] row : grid) {
@@ -104,28 +106,38 @@ public class Client {
         selectCellServer(x, y);
     }
     public static void selectCellServer(int x, int y){
-        //TODO: falta establecer protocolo
         String [] position = {String.valueOf(x),String.valueOf(y)};
-        out.println(String.join(",", position));
-        System.out.println("Coordenada enviada");
+        MessageManipulator protocolMessage = new MessageManipulator(String.join(",", position));
+        String response = protocolMessage.getOutputInProtocol(MessageLevel.EVALUATE);
+        out.println(response);
         out.flush();
+        System.out.println("Coordenada enviada");
     }
     
-    private static void receiveCell(String response){
+    private static void receiveMessage(String msg){
         System.out.println("Recibiendoo.....");
-        if(response=="win"){
-            win=true;
+        MessageManipulator mm = new MessageManipulator(msg);
+        MessageLevel messageType = mm.getMessageLevel();
+        switch (messageType) {
+            case PAINT:
+                paintView(mm);
+                break;
+            case WIN:
+                JOptionPane.showMessageDialog(null, "WIN");
+                break;
+            default:
+                throw new AssertionError();
         }
-        String[] coordenadas = response.split(",");
-        int x = Integer.valueOf(coordenadas[0]);
-        int y = Integer.valueOf(coordenadas[1]);
-        //marcarGrid(x, y);
-        view.pintarCell(x, y, "X");
-        System.out.println("x: "+x+" y: "+y);
-        //mostrarGrid();
     }
     
-    private static void marcarGrid(int x, int y) {
-        grid[y][x] = 2;
+    
+    
+    private static void paintView(MessageManipulator message) {
+        String info [] = message.getMessageInfo().split(",");
+        int x = Integer.valueOf(info[0]);
+        int y = Integer.valueOf(info[1]);
+        String painting = info[2];
+        view.pintarCell(x, y, painting);
+        System.out.println("x: "+x+" y: "+y);
     }
 }
