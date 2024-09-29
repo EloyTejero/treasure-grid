@@ -13,6 +13,7 @@ public enum MessageLevel {
     DISCONNECTION(2),
     RESET(10),
     ERROR(3),
+    WAIT(4),
     UNKNOWN(0);
     
     private final int number;

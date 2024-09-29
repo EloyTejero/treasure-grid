@@ -124,10 +124,19 @@ public class Client {
                 paintView(mm);
                 break;
             case WIN:
-                JOptionPane.showMessageDialog(null, "WIN");
+                JOptionPane.showMessageDialog(null, mm.getMessageInfo());
                 break;
             case RESET:
                 reset();
+                break;
+            case WAIT:
+                JOptionPane.showConfirmDialog(null, mm.getMessageInfo());
+                break;
+            case ERROR:
+                JOptionPane.showConfirmDialog(null, mm.getMessageInfo());
+                break;
+            case CONNECTION:
+                JOptionPane.showConfirmDialog(null, mm.getMessageInfo());
                 break;
             default:
                 throw new AssertionError();

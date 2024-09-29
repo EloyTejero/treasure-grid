@@ -22,6 +22,7 @@ public class MessageManipulator {
             case "1" -> MessageLevel.CONNECTION;
             case "2" -> MessageLevel.DISCONNECTION;
             case "3" -> MessageLevel.ERROR;
+            case "4" -> MessageLevel.WAIT;
             default -> MessageLevel.UNKNOWN;
         };
     }

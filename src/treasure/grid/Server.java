@@ -16,6 +16,7 @@ public class Server {
     private ServerSocket serverSocket;
     private static final List<clientManager> clientes = new ArrayList<>();
     private static int [] treasure = new int[2];
+    private static boolean gameStarted = false;
     
     public void start(int port){
         try {
@@ -29,6 +30,7 @@ public class Server {
                 client.start();
                 clientes.add(client);
                 System.out.println("Numero clientes: "+clientes.size());
+                checkGame();
             }
         } catch (IOException ex) {
             System.out.println("Error en runtime server");
@@ -49,6 +51,34 @@ public class Server {
         for(clientManager c:clientes){
             c.sendMessage(message);
         }
+    }
+    
+    public static synchronized void sendAllExcept(clientManager client, String message){
+        for(clientManager c:clientes){
+            if(c!=client){
+                c.sendMessage(message);
+            }
+        }
+    }
+    
+    public static synchronized void checkGame(){
+        if(clientes.size()<2){
+            if(gameStarted){
+                gameStarted = false;
+                sendAll(new MessageManipulator("Contrincante desconectado, reseteando a la espera").getOutputInProtocol(MessageLevel.ERROR));
+                reset();
+            }
+            return;
+        }
+        
+        if(!gameStarted){ //si no esta empezado lo arranca
+            startGame(); //pero si entra alguien y la partida esta empezada no le va a salir el cartel de start
+        }
+    }
+    
+    public static void startGame(){
+        gameStarted = true;
+        sendAll(new MessageManipulator("start").getOutputInProtocol(MessageLevel.CONNECTION));
     }
     
     static void placeTreasure() {
@@ -75,6 +105,7 @@ public class Server {
         private final Socket socket;
         private BufferedReader in;
         private PrintWriter out;
+        int score = 0;
         
         public clientManager(Socket clientSocket) {
             socket = clientSocket; 
@@ -99,6 +130,7 @@ public class Server {
                 System.out.println(clientes.size());
             } finally{
                 clientes.remove(this);
+                checkGame();
             }
         }
         
@@ -119,6 +151,12 @@ public class Server {
 
         private void evaluateCell(MessageManipulator message) {
             MessageManipulator response;
+            
+            if(!gameStarted){
+                response = new MessageManipulator("El juego no comenzo");
+                sendMessage(response.getOutputInProtocol(MessageLevel.WAIT));
+                return;
+            }
             
             String [] coords = message.getMessageInfo().split(",");
             int x = Integer.valueOf(coords[0]);
