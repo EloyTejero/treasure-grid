@@ -11,6 +11,7 @@ public enum MessageLevel {
     EVALUATE(25),
     CONNECTION(1),
     DISCONNECTION(2),
+    RESET(10),
     ERROR(3),
     UNKNOWN(0);
     

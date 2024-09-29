@@ -56,6 +56,14 @@ public class Ventana extends JFrame{
         grid[y][x].setText(pintar);
     }
     
+    public void reset(){
+        for (int i = 0; i < grid.length; i++) {
+            for(int j=0;j < grid[i].length; j++){
+                grid[i][j].setText("");
+            }
+        }
+    }
+    
     /*public static void main(String[] args){
         new Ventana();
     }*/

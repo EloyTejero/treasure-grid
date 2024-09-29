@@ -32,6 +32,7 @@ public class Client {
                         }
                     }
                 } catch (IOException e) {
+                    System.out.println(e); //TODO: Mandar al client devuelta a login
                 }
             }).start();
             
@@ -125,6 +126,9 @@ public class Client {
             case WIN:
                 JOptionPane.showMessageDialog(null, "WIN");
                 break;
+            case RESET:
+                reset();
+                break;
             default:
                 throw new AssertionError();
         }
@@ -139,5 +143,9 @@ public class Client {
         String painting = info[2];
         view.pintarCell(x, y, painting);
         System.out.println("x: "+x+" y: "+y);
+    }
+
+    private static void reset() {
+        view.reset();
     }
 }

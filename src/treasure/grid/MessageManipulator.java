@@ -18,6 +18,7 @@ public class MessageManipulator {
             case "200" -> MessageLevel.LOSS;
             case "50" -> MessageLevel.PAINT;
             case "25" -> MessageLevel.EVALUATE;
+            case "10" -> MessageLevel.RESET;
             case "1" -> MessageLevel.CONNECTION;
             case "2" -> MessageLevel.DISCONNECTION;
             case "3" -> MessageLevel.ERROR;

@@ -24,9 +24,11 @@ public class Server {
             placeTreasure();
             while(true){
                 Socket clientSocket = serverSocket.accept();
+                System.out.println("Cliente aceptado");
                 clientManager client = new clientManager(clientSocket);
                 client.start();
                 clientes.add(client);
+                System.out.println("Numero clientes: "+clientes.size());
             }
         } catch (IOException ex) {
             System.out.println("Error en runtime server");
@@ -61,6 +63,13 @@ public class Server {
         return (treasure[0] == x) && (treasure[1] == y);
     }
     
+    public static synchronized void reset(){
+        placeTreasure();
+        MessageManipulator message = new MessageManipulator("1");
+        String protocolMessage = message.getOutputInProtocol(MessageLevel.RESET);
+        sendAll(protocolMessage);
+    }
+    
     private static class clientManager extends Thread{
         
         private final Socket socket;
@@ -82,16 +91,14 @@ public class Server {
                     message = in.readLine();
                     if(message!= null){
                         System.out.println("Recibido: "+message);
-                        /*
-                        out.println(message);
-                        sendAll(message);
-                        System.out.println("Enviado: "+message);
-                        */
                         receiveMessage(message);
                     }
                 }
             } catch (IOException ex) {
                 System.out.println("Error trasmision de mensajes");
+                System.out.println(clientes.size());
+            } finally{
+                clientes.remove(this);
             }
         }
         
@@ -105,11 +112,8 @@ public class Server {
             MessageManipulator message = new MessageManipulator(CodedMessage);
             MessageLevel messageType = message.getMessageLevel();
             switch (messageType) {
-                case EVALUATE:
-                    evaluateCell(message);
-                    break;
-                default:
-                    throw new AssertionError();
+                case EVALUATE -> evaluateCell(message);
+                default -> throw new AssertionError();
             }
         }
 
@@ -120,11 +124,7 @@ public class Server {
             int x = Integer.valueOf(coords[0]);
             int y = Integer.valueOf(coords[1]);
             
-            if(isThereTreasure(x,y)){
-                response = new MessageManipulator("win");
-                sendMessage(response.getOutputInProtocol(MessageLevel.WIN));
-                response = new MessageManipulator(x+","+y+",T");
-            } else{
+            if(!isThereTreasure(x,y)){
                 final int BIT_ARRIBA = 1;
                 final int BIT_ABAJO = 1 << 1;
                 final int BIT_DERECHA = 1 << 2;
@@ -154,12 +154,18 @@ public class Server {
                 }
                 
                 response = new MessageManipulator(x+","+y+","+direccionTreasure);
+                sendAll(response.getOutputInProtocol(MessageLevel.PAINT));
+                return;
             }
             
+            response = new MessageManipulator(x+","+y+",T");
             sendAll(response.getOutputInProtocol(MessageLevel.PAINT));
+            response = new MessageManipulator("win");
+            sendMessage(response.getOutputInProtocol(MessageLevel.WIN));
+            response = new MessageManipulator("reset");
+            sendAll(response.getOutputInProtocol(MessageLevel.RESET));
+            reset();
         }
-        
-        
     }
     
     public static void main(String[] args){
