@@ -6,16 +6,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 
 public class Server {
     
     private ServerSocket serverSocket;
-    private static final List<clientManager> clientes = new ArrayList<>();
-    private static int [] treasure = new int[2];
+    private static final List<clientManager> clientes = new CopyOnWriteArrayList<>();
+    private static final int [] treasure = new int[2];
     private static boolean gameStarted = false;
     
     public void start(int port){
@@ -49,7 +49,16 @@ public class Server {
     
     public static synchronized void sendAll(String message){
         for(clientManager c:clientes){
-            c.sendMessage(message);
+            if(c!=null){
+                c.sendMessage(message);
+            }
+            /*
+            try{
+                c.sendMessage(message);
+            } catch(NullPointerException e){
+                System.out.println("usuario null");
+                clientes.remove(c);
+            }*/
         }
     }
     
@@ -76,7 +85,7 @@ public class Server {
         }
     }
     
-    public static void startGame(){
+    public static synchronized void startGame(){
         gameStarted = true;
         sendAll(new MessageManipulator("start").getOutputInProtocol(MessageLevel.CONNECTION));
     }
@@ -116,11 +125,12 @@ public class Server {
             try {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream());
+                System.out.println("Generado IO: "+out.toString()+" "+in.toString());
                 
                 String message;
                 while(true){
-                    message = in.readLine();
-                    if(message!= null){
+                    
+                    if((message = in.readLine())!= null){
                         System.out.println("Recibido: "+message);
                         receiveMessage(message);
                     }
@@ -130,12 +140,21 @@ public class Server {
                 System.out.println(clientes.size());
             } finally{
                 clientes.remove(this);
+                out.close();
+                try {
+                    in.close();
+                    socket.close();
+                } catch (IOException ex) {
+                    System.out.println("Error de desconexion");
+                }                
                 checkGame();
+                System.out.println(clientes.size());
             }
         }
         
         private void sendMessage(String message){
-            System.out.println("Enviandooo...");
+            System.out.println("Enviandooo... a client: "+this.toString());
+            System.out.println("OUT: "+out.toString());
             out.println(message);
             out.flush();
         }
@@ -192,12 +211,14 @@ public class Server {
                 }
                 
                 response = new MessageManipulator(x+","+y+","+direccionTreasure);
-                sendAll(response.getOutputInProtocol(MessageLevel.PAINT));
+                sendAllExcept(this, response.getOutputInProtocol(MessageLevel.PAINT)+",r");
+                sendMessage(response.getOutputInProtocol(MessageLevel.PAINT)+",g");
                 return;
             }
             
             response = new MessageManipulator(x+","+y+",T");
-            sendAll(response.getOutputInProtocol(MessageLevel.PAINT));
+            sendAllExcept(this, response.getOutputInProtocol(MessageLevel.PAINT)+",r");
+            sendMessage(response.getOutputInProtocol(MessageLevel.PAINT)+",g");
             response = new MessageManipulator("win");
             sendMessage(response.getOutputInProtocol(MessageLevel.WIN));
             response = new MessageManipulator("reset");

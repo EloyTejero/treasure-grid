@@ -1,7 +1,9 @@
 package main.view;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -12,20 +14,29 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 import main.treasure.grid.Client;
 
 public class Ventana extends JFrame{
     
+    Client client;
     JButton [][] grid = new JButton[10][10];
+    private final JLabel scoreLabel;
     
-    public Ventana(){
+    public Ventana(Client client){
+        this.client = client;
+        
         setSize(500,400);
         setMinimumSize(new Dimension(500,400));
         //setLayout(null);
         //setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        // Panel principal con BorderLayout
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
         
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(10, 10)); // Cuadrícula de 10x10
@@ -40,7 +51,7 @@ public class Ventana extends JFrame{
                     String[] coordenadas = coordenada.split(",");
                     int x = Integer.valueOf(coordenadas[0]);
                     int y = Integer.valueOf(coordenadas[1]);
-                    Client.selectCellServer(x, y);
+                    client.selectCellServer(x, y);
                 }
         };
         
@@ -60,13 +71,23 @@ public class Ventana extends JFrame{
                 grid[i][j] = button;
             }
         }
+        // Etiqueta de puntaje
+        scoreLabel = new JLabel("Score: 0", JLabel.CENTER); // Etiqueta centrada
+        scoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Añadir el panel al marco
-        add(panel);
+        // Añadir la cuadrícula al centro y el puntaje abajo
+        mainPanel.add(panel, BorderLayout.CENTER); // Cuadrícula en el centro
+        mainPanel.add(scoreLabel, BorderLayout.SOUTH); // Etiqueta de puntaje abajo
+
+        // Añadir el panel principal al marco
+        add(mainPanel);
         setVisible(true);
+//        // Añadir el panel al marco
+//        add(panel);
+//        setVisible(true);
     }
     
-    public void pintarCell(int x, int y, String direction){
+    public void pintarCell(int x, int y, String direction, String color){
         String imagePath = "";
         switch (direction) {
             case "U" -> imagePath = "/icons/up-arrow.png";
@@ -80,6 +101,12 @@ public class Ventana extends JFrame{
             case "T" -> imagePath = "/icons/treasure-chest.png";
         }
         
+        Color color_ = Color.white;
+        switch (color){
+            case "r" -> color_ = Color.red;
+            case "g" -> color_ = Color.GREEN;
+        }
+        
         URL iconUrl = getClass().getResource(imagePath);
         ImageIcon icon = new ImageIcon(iconUrl);
         
@@ -88,15 +115,22 @@ public class Ventana extends JFrame{
         icon = new ImageIcon(newImg);
         
         grid[y][x].setIcon(icon);
+        grid[y][x].setBackground(color_);
     }
     
     public void reset(){
         for (int i = 0; i < grid.length; i++) {
             for(int j=0;j < grid[i].length; j++){
                 grid[i][j].setIcon(null);
+                grid[i][j].setBackground(Color.WHITE);
             }
         }
     }
+    
+    public void updateScore(int score) {
+        scoreLabel.setText("Score: " + score);
+    }
+    
     /*
     public static void main(String args[]){
         new Ventana();
