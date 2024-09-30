@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -17,6 +18,7 @@ public class Server {
     private static final List<clientManager> clientes = new CopyOnWriteArrayList<>();
     private static final int [] treasure = new int[2];
     private static boolean gameStarted = false;
+    private static List<String> grid = new ArrayList<>(); // La cuadrícula del juego
     
     public void start(int port){
         try {
@@ -30,7 +32,6 @@ public class Server {
                 client.start();
                 clientes.add(client);
                 System.out.println("Numero clientes: "+clientes.size());
-                checkGame();
             }
         } catch (IOException ex) {
             System.out.println("Error en runtime server");
@@ -49,16 +50,12 @@ public class Server {
     
     public static synchronized void sendAll(String message){
         for(clientManager c:clientes){
-            if(c!=null){
-                c.sendMessage(message);
-            }
-            /*
             try{
                 c.sendMessage(message);
             } catch(NullPointerException e){
                 System.out.println("usuario null");
                 clientes.remove(c);
-            }*/
+            }
         }
     }
     
@@ -68,6 +65,11 @@ public class Server {
                 c.sendMessage(message);
             }
         }
+    }
+    
+    public static synchronized void disconnect(clientManager client){
+        clientes.remove(client);
+        
     }
     
     public static synchronized void checkGame(){
@@ -103,6 +105,7 @@ public class Server {
     }
     
     public static synchronized void reset(){
+        grid.clear();
         placeTreasure();
         MessageManipulator message = new MessageManipulator("1");
         String protocolMessage = message.getOutputInProtocol(MessageLevel.RESET);
@@ -127,6 +130,14 @@ public class Server {
                 out = new PrintWriter(socket.getOutputStream());
                 System.out.println("Generado IO: "+out.toString()+" "+in.toString());
                 
+                checkGame();
+                
+                if(gameStarted){
+                    for(String m:grid){
+                        sendMessage(m);
+                    }
+                }
+                
                 String message;
                 while(true){
                     
@@ -139,8 +150,8 @@ public class Server {
                 System.out.println("Error trasmision de mensajes");
                 System.out.println(clientes.size());
             } finally{
-                clientes.remove(this);
-                out.close();
+                disconnect(this);
+                //out.close();
                 try {
                     in.close();
                     socket.close();
@@ -211,6 +222,9 @@ public class Server {
                 }
                 
                 response = new MessageManipulator(x+","+y+","+direccionTreasure);
+                
+                grid.add(response.getOutputInProtocol(MessageLevel.PAINT)+",r");
+                
                 sendAllExcept(this, response.getOutputInProtocol(MessageLevel.PAINT)+",r");
                 sendMessage(response.getOutputInProtocol(MessageLevel.PAINT)+",g");
                 return;
