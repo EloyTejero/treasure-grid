@@ -1,17 +1,15 @@
-package treasure.grid;
+package main.treasure.grid;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Scanner;
 import javax.swing.JOptionPane;
-import view.Ventana;
+import main.view.Ventana;
 
 public class Client {
     static int[][] grid; // La cuadrícula del juego
-    static Scanner scanner = new Scanner(System.in);
     static PrintWriter out;
     static BufferedReader in;
     static Ventana view = new Ventana();
@@ -36,15 +34,6 @@ public class Client {
                 }
             }).start();
             
-            //String message;
-            //while(true){
-                /*
-                message=scanner.nextLine();
-                if(message!=null){
-                    System.out.println(message);
-                    out.println(message);
-                    out.flush();
-                }*/
             while(true){
                 if(win){
                     view.setVisible(false);
@@ -53,12 +42,11 @@ public class Client {
                 }
             }
                 
-            //}
         } catch (IOException e) {
+            
         }
         finally{
             System.out.println("finally ejecutado");
-            scanner.close();
             view.setVisible(false);
             view.dispose();
         }
@@ -68,44 +56,8 @@ public class Client {
         //grid = new int[gridSize][gridSize];
         System.out.println("Spawn ventana");
         view = new Ventana();
-                
-        /*mostrarGrid();
-        while(true){
-            userChoice();
-        }*/
     }
     
-    private static void mostrarGrid(){
-        System.out.println("");
-        for (int[] row : grid) {
-            //Arrays.stream(row).forEach(System.out::print);
-            for(int num:row){
-                System.out.print(num);
-            }
-            System.out.println("");
-        }
-        System.out.println("");
-    }
-    public static void userChoice(int x, int y) {
-        /*
-        System.out.print("Ingrese x: ");
-        int x = scanner.nextInt();
-        scanner.nextLine();
-        System.out.print("Ingrese y: ");
-        int y = scanner.nextInt();
-        */
-        
-        //TODO: verificar que las coordenadas esten dentro de la grilla de juego
-        
-        //Al ser por consola hay que invertir el eje Y, ya que tecnicamente la primera fila desde abajo
-        //es el indice maximo, si la grilla es de 10 va a ser 9. Pero para que sea mas facil para el usuario
-        //que cuando escriba 0 se refiera a la ultima linea.
-        //y = grid.length - y; 
-        scanner.nextLine();
-        
-        //enviar al server el punto elegido
-        selectCellServer(x, y);
-    }
     public static void selectCellServer(int x, int y){
         String [] position = {String.valueOf(x),String.valueOf(y)};
         MessageManipulator protocolMessage = new MessageManipulator(String.join(",", position));

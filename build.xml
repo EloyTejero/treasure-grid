@@ -10,6 +10,16 @@
 <project name="treasure_grid" default="default" basedir=".">
     <description>Builds, tests, and runs the project treasure grid.</description>
     <import file="nbproject/build-impl.xml"/>
+    <!-- Nuevo target para copiar los recursos al directorio de clases -->
+    <target name="copy-resources" description="Copy resources to build/classes">
+        <copy todir="build/classes">
+            <!-- Copiar todos los archivos de resources al directorio de clases -->
+            <fileset dir="src/main/resources" includes="**/*"/>
+        </copy>
+    </target>
+
+    <!-- Para que este target se ejecute automáticamente después de la compilación -->
+    <target name="-post-compile" depends="copy-resources"/>
     <!--
 
     There exist several targets which are by default empty and which can be 

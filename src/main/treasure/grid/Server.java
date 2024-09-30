@@ -1,4 +1,4 @@
-package treasure.grid;
+package main.treasure.grid;
 
 import java.io.BufferedReader;
 import java.io.IOException;
