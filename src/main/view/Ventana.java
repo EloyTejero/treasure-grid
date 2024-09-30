@@ -1,5 +1,6 @@
 package main.view;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -26,6 +27,8 @@ public class Ventana extends JFrame{
     private final JLabel scoreLabel;
     
     public Ventana(Client client){
+        //FlatLightLaf.setup();
+
         this.client = client;
         
         setSize(500,400);
@@ -62,11 +65,11 @@ public class Ventana extends JFrame{
                 button.setPreferredSize(new Dimension(30, 30));
                 button.setName(j+","+i);
                 button.setBackground(Color.WHITE);
-                Border border = BorderFactory.createLineBorder(Color.BLACK, 1); // Borde rojo de 3 píxeles
-                button.setBorder(border);
+                //Border border = BorderFactory.createLineBorder(Color.BLACK, 1); // Borde negro de 1 píxeles
+                //button.setBorder(border);
                 
                 button.addActionListener(clickListener);
-                
+                button.setOpaque(true);
                 panel.add(button);
                 grid[i][j] = button;
             }
@@ -113,9 +116,10 @@ public class Ventana extends JFrame{
         Image img = icon.getImage();
         Image newImg = img.getScaledInstance(24, 24, Image.SCALE_SMOOTH);
         icon = new ImageIcon(newImg);
-        
+
         grid[y][x].setIcon(icon);
         grid[y][x].setBackground(color_);
+        grid[y][x].setEnabled(false);
     }
     
     public void reset(){
@@ -123,6 +127,7 @@ public class Ventana extends JFrame{
             for(int j=0;j < grid[i].length; j++){
                 grid[i][j].setIcon(null);
                 grid[i][j].setBackground(Color.WHITE);
+                grid[i][j].setEnabled(true);
             }
         }
     }

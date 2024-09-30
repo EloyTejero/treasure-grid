@@ -230,13 +230,15 @@ public class Server {
                 return;
             }
             
+            score++;
             response = new MessageManipulator(x+","+y+",T");
             sendAllExcept(this, response.getOutputInProtocol(MessageLevel.PAINT)+",r");
             sendMessage(response.getOutputInProtocol(MessageLevel.PAINT)+",g");
-            response = new MessageManipulator("win");
+            response = new MessageManipulator(String.valueOf(score));
             sendMessage(response.getOutputInProtocol(MessageLevel.WIN));
             response = new MessageManipulator("reset");
             sendAll(response.getOutputInProtocol(MessageLevel.RESET));
+            
             reset();
         }
     }

@@ -81,9 +81,9 @@ public class Client {
                 paintView(mm);
                 break;
             case WIN:
-                score++;
+                score = Integer.parseInt(mm.getMessageInfo());
                 view.updateScore(score);
-                JOptionPane.showMessageDialog(null, mm.getMessageInfo());
+                JOptionPane.showMessageDialog(null, "WIN");
                 break;
             case RESET:
                 reset();
