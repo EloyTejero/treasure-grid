@@ -17,6 +17,7 @@ public class Server {
     private ServerSocket serverSocket;
     private static final List<clientManager> clientes = new CopyOnWriteArrayList<>();
     private static final int [] treasure = new int[2];
+    private static final Integer[][] bombs = new Integer[5][2];
     private static boolean gameStarted = false;
     private static List<String> grid = new ArrayList<>(); // La cuadrícula del juego
     
@@ -25,6 +26,7 @@ public class Server {
             serverSocket = new ServerSocket(port);
             System.out.println("Server encendido");
             placeTreasure();
+            placeBombs();
             while(true){
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Cliente aceptado");
@@ -69,12 +71,13 @@ public class Server {
     
     public static synchronized void disconnect(clientManager client){
         clientes.remove(client);
-        
     }
     
     public static synchronized void checkGame(){
+        System.out.println("CHECKEANDO");
         if(clientes.size()<2){
             if(gameStarted){
+                System.out.println("CERRANDO JUEGO");
                 gameStarted = false;
                 sendAll(new MessageManipulator("Contrincante desconectado, reseteando a la espera").getOutputInProtocol(MessageLevel.ERROR));
                 reset();
@@ -93,11 +96,35 @@ public class Server {
     }
     
     static void placeTreasure() {
-        int x = (int) (Math.random() * 10);
-        int y = (int) (Math.random() * 10);
+        int x = (int) (Math.random() * 25);
+        int y = (int) (Math.random() * 25);
         treasure[0] = x;
         treasure[1] = y;
         System.out.println("Tesoro: "+x+","+y);
+    }
+    
+    public static void placeBombs(){
+        int cont = 0;
+        while(cont<5){
+            int x = (int) (Math.random() * 25);
+            int y = (int) (Math.random() * 25);
+            if(isThereTreasure(x, y)){
+                continue;
+            }
+            Integer[] bombCoords = {x,y};
+            bombs[cont] = bombCoords;
+            cont++;
+            System.out.println("bomb"+cont+": "+bombCoords[0]+","+bombCoords[1]);
+        }
+    }
+    
+    public static boolean isThereBomb(int x,int y){
+        for(Integer[] i:bombs){
+            if(i[0]==x && i[1]==y){
+                return true;
+            }
+        }
+        return false;
     }
     
     private static synchronized boolean isThereTreasure(int x, int y) {
@@ -107,6 +134,7 @@ public class Server {
     public static synchronized void reset(){
         grid.clear();
         placeTreasure();
+        placeBombs();
         MessageManipulator message = new MessageManipulator("1");
         String protocolMessage = message.getOutputInProtocol(MessageLevel.RESET);
         sendAll(protocolMessage);
@@ -140,7 +168,6 @@ public class Server {
                 
                 String message;
                 while(true){
-                    
                     if((message = in.readLine())!= null){
                         System.out.println("Recibido: "+message);
                         receiveMessage(message);
@@ -149,17 +176,25 @@ public class Server {
             } catch (IOException ex) {
                 System.out.println("Error trasmision de mensajes");
                 System.out.println(clientes.size());
-            } finally{
                 disconnect(this);
-                //out.close();
-                try {
-                    in.close();
-                    socket.close();
-                } catch (IOException ex) {
-                    System.out.println("Error de desconexion");
-                }                
+            } finally{
+                System.out.println("FINALLY");
+                close();
                 checkGame();
                 System.out.println(clientes.size());
+            }
+        }
+        
+        private void close(){
+            System.out.println("CLOSEANDO");
+            try {
+                in.close();
+                out.close();
+                socket.close();
+                disconnect(this);
+                checkGame();
+            } catch (IOException ex) {
+                System.out.println("Error de desconexion");
             }
         }
         
@@ -175,6 +210,7 @@ public class Server {
             MessageLevel messageType = message.getMessageLevel();
             switch (messageType) {
                 case EVALUATE -> evaluateCell(message);
+                case DISCONNECTION -> close();
                 default -> throw new AssertionError();
             }
         }
@@ -191,6 +227,14 @@ public class Server {
             String [] coords = message.getMessageInfo().split(",");
             int x = Integer.valueOf(coords[0]);
             int y = Integer.valueOf(coords[1]);
+            
+            if(isThereBomb(x, y)){
+                response = new MessageManipulator(x+","+y+",bomb");
+                sendMessage(response.getOutputInProtocol(MessageLevel.PAINT)+",g");
+                sendAllExcept(this, response.getOutputInProtocol(MessageLevel.PAINT)+",r");
+                sendMessage(response.getOutputInProtocol(MessageLevel.DISCONNECTION));
+                return;
+            }
             
             if(!isThereTreasure(x,y)){
                 final int BIT_ARRIBA = 1;

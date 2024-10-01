@@ -1,6 +1,5 @@
 package main.view;
 
-import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,7 +22,7 @@ import main.treasure.grid.Client;
 public class Ventana extends JFrame{
     
     Client client;
-    JButton [][] grid = new JButton[10][10];
+    JButton [][] grid = new JButton[25][25];
     private final JLabel scoreLabel;
     
     public Ventana(Client client){
@@ -32,7 +31,7 @@ public class Ventana extends JFrame{
         this.client = client;
         
         setSize(500,400);
-        setMinimumSize(new Dimension(500,400));
+        setMinimumSize(new Dimension(900,700));
         //setLayout(null);
         //setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -42,7 +41,7 @@ public class Ventana extends JFrame{
         mainPanel.setLayout(new BorderLayout());
         
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(10, 10)); // Cuadrícula de 10x10
+        panel.setLayout(new GridLayout(25, 25)); // Cuadrícula de 10x10
         
         ActionListener clickListener = new ActionListener() {
                 @Override
@@ -65,11 +64,11 @@ public class Ventana extends JFrame{
                 button.setPreferredSize(new Dimension(30, 30));
                 button.setName(j+","+i);
                 button.setBackground(Color.WHITE);
-                //Border border = BorderFactory.createLineBorder(Color.BLACK, 1); // Borde negro de 1 píxeles
-                //button.setBorder(border);
+                Border border = BorderFactory.createLineBorder(Color.BLACK, 1); // Borde negro de 1 píxeles
+                button.setBorder(border);
                 
                 button.addActionListener(clickListener);
-                button.setOpaque(true);
+                //button.setOpaque(true);
                 panel.add(button);
                 grid[i][j] = button;
             }
@@ -102,6 +101,7 @@ public class Ventana extends JFrame{
             case "DR" -> imagePath = "/icons/down-right-arrow.png";
             case "DL" -> imagePath = "/icons/down-left-arrow.png";
             case "T" -> imagePath = "/icons/treasure-chest.png";
+            case "bomb" -> imagePath = "/icons/bomb.png";
         }
         
         Color color_ = Color.white;
@@ -116,9 +116,9 @@ public class Ventana extends JFrame{
         Image img = icon.getImage();
         Image newImg = img.getScaledInstance(24, 24, Image.SCALE_SMOOTH);
         icon = new ImageIcon(newImg);
-
-        grid[y][x].setIcon(icon);
+        
         grid[y][x].setBackground(color_);
+        grid[y][x].setIcon(icon);
         grid[y][x].setEnabled(false);
     }
     

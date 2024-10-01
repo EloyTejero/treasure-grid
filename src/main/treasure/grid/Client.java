@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import main.view.Ventana;
 
@@ -12,8 +14,8 @@ public class Client {
     static int[][] grid; // La cuadrícula del juego
     private PrintWriter out;
     private BufferedReader in;
-    Ventana view = new Ventana(this);
-    static boolean win = false;
+    private Ventana view = new Ventana(this);
+    private volatile boolean explosion = false;
     private int score = 0;
     
     public static void main(String[] args){
@@ -40,10 +42,14 @@ public class Client {
             }).start();
             
             while(true){
-                if(win){
+                if(explosion){
+                    System.out.println("bombini");
                     view.setVisible(false);
                     view.dispose();
-                    game();
+                    //game();
+                    out.println(new MessageManipulator("bomb").getOutputInProtocol(MessageLevel.DISCONNECTION));
+                    JOptionPane.showMessageDialog(null, "Tocaste una bomba perdiste, vuelva a conectarse");
+                    break;
                 }
             }
                 
@@ -51,9 +57,15 @@ public class Client {
             
         }
         finally{
-            System.out.println("finally ejecutado");
-            view.setVisible(false);
-            view.dispose();
+            try {
+                out.close();
+                in.close();
+                System.out.println("finally ejecutado");
+                view.setVisible(false);
+                view.dispose();
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
     
@@ -96,6 +108,10 @@ public class Client {
                 break;
             case CONNECTION:
                 JOptionPane.showMessageDialog(null, mm.getMessageInfo());
+                break;
+            case DISCONNECTION:
+                System.out.println("bombaaaa");
+                explosion = true;
                 break;
             default:
                 throw new AssertionError();
